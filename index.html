@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traductor i Generador de Dibuixos COMAND</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ==========================================================================
+           ESTILS GLOBALS I CONFIGURACIÓ BASE
+           ========================================================================== */
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0b132b;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Tipografia per als títols i elements destacats */
+        .font-display {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        /* Efectes visuals específics del mode COMAND */
+        .glow-red {
+            filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.9)) drop-shadow(0 0 12px rgba(239, 68, 68, 0.4));
+        }
+
+        /* Fons en quadrícula per donar un toc tècnic / de disseny */
+        .grid-bg {
+            background-size: 20px 20px;
+            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+        }
+
+        /* Scrollbar personalitzada per a les galeries */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 10px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(71, 85, 105, 0.8);
+            border-radius: 10px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(100, 116, 139, 1);
+        }
+
+        /* Animacions personalitzades */
+        @keyframes subtle-pulse {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { opacity: 0.8; }
+        }
+
+        .animate-subtle {
+            animation: subtle-pulse 3s infinite ease-in-out;
+        }
+
+        /* Classes d'ajuda addicionals preparades */
+        .flex-center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .absolute-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .text-shadow-sm {
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col justify-between grid-bg">
+
+    <!-- ==========================================================================
+         CAPÇALERA PRINCIPAL
+         ========================================================================== -->
+    <header class="border-b border-slate-800 bg-slate-950/90 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-amber-500 flex items-center justify-center font-bold text-slate-950 text-xl font-display shadow-lg shadow-amber-500/20">
+                    C#
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold font-display tracking-tight text-white flex items-center gap-2">
+                        L'idioma <span class="text-amber-500 font-extrabold">COMAND</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Creat originalment per <span class="text-amber-400 font-medium">Hablack09</span></p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap gap-2 justify-center">
+                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20">
+                    COMAND 0.1
+                </span>
+                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    COMAND 0.2
+                </span>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- ==========================================================================
+         CONTINGUT PRINCIPAL DE L'APLICACIÓ
+         ========================================================================== -->
+    <main class="max-w-6xl mx-auto px-4 py-8 flex-grow w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- ======================================================================
+             COLUMNA ESQUERRA: ENTRADA DE TEXT I TRADUCCIÓ
+             ====================================================================== -->
+        <section class="lg:col-span-7 flex flex-col gap-6">
+            
+            <!-- Entrada de Text -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-2 h-full bg-amber-500"></div>
+                
+                <h2 class="text-lg font-semibold font-display mb-4 text-white flex items-center gap-2">
+                    <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                    Escriu el teu missatge o frase secreta
+                </h2>
+                
+                <textarea 
+                    id="textInput" 
+                    class="w-full h-32 bg-slate-950 border border-slate-800 rounded-xl p-4 text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all resize-none text-lg"
+                    placeholder="Escriu aquí per traduir..."
+                >classe de castella avorrida</textarea>
+                
+                <div class="mt-3 flex justify-between items-center">
+                    <p class="text-xs text-slate-400">Suporta lletres, la Ç i també caràcters de puntuació.</p>
+                    <button 
+                        id="clearBtn"
+                        class="px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition"
+                    >
+                        Netejar camp
+                    </button>
+                </div>
+            </div>
+
+            <!-- Resultat COMAND 0.1 Numèric -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-2 h-full bg-red-500"></div>
+                
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold font-display text-white flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+                        Traducció COMAND 0.1 (Codis Numèrics)
+                    </h2>
+                    <button 
+                        id="copyC01"
+                        class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-lg text-slate-300 transition flex items-center gap-1.5"
+                    >
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+                        </svg>
+                        Copiar Codi
+                    </button>
+                </div>
+                
+                <div id="outputC01" class="w-full min-h-[4rem] bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-amber-400 break-all text-base leading-relaxed">
+                    <!-- S'omple amb JS -->
+                </div>
+                
+                <div class="mt-3 flex justify-between text-xs text-slate-400 font-mono">
+                    <span>Lletra a lletra = <strong class="text-white">/</strong ></span>
+                    <span>Paraules = <strong class="text-white">-</strong ></span>
+                </div>
+            </div>
+
+            <!-- Sorral de creació interactiu -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                <h2 class="text-lg font-semibold font-display mb-2 text-white flex items-center gap-2">
+                    <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                    </svg>
+                    Creador de Figures lliures (Sense / ni -)
+                </h2>
+                <p class="text-xs text-slate-400 mb-6">Dibuixa a la quadrícula, o bé <strong>escriu i edita directament el número</strong> a la dreta per formar qualsevol figura que vulguis de forma instantània.</p>
+                
+                <div class="flex flex-col md:flex-row gap-6 items-center">
+                    
+                    <!-- Interactive Canvas -->
+                    <div class="relative w-60 h-60 bg-slate-950 rounded-xl border border-slate-800 p-2 overflow-hidden shadow-inner flex-shrink-0">
+                        <canvas id="sandboxCanvas" width="240" height="240" class="w-full h-full cursor-crosshair"></canvas>
+                    </div>
+
+                    <!-- Sandbox Output / Input Directe -->
+                    <div class="flex-grow w-full flex flex-col justify-between h-56">
+                        <div class="bg-slate-950/60 p-4 border border-slate-850 rounded-xl">
+                            <label for="sandboxInput" class="text-xs uppercase font-semibold text-emerald-500 block mb-2">Escriu o edita el codi aquí:</label>
+                            <input 
+                                id="sandboxInput" 
+                                type="text" 
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg py-2 px-3 font-mono text-2xl text-emerald-400 font-bold tracking-widest text-center focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all placeholder-slate-700" 
+                                placeholder="Ex: 18762"
+                                value=""
+                            />
+                            <p class="text-[10px] text-slate-500 mt-2 font-mono">Accepta qualsevol número de l'1 al 9. Pots fer línies de l'1 al 8, del 7 al 6, etc.</p>
+                        </div>
+
+                        <div class="flex gap-2 mt-4">
+                            <button id="clearSandboxBtn" class="flex-1 py-2 px-4 bg-slate-800 hover:bg-slate-755 text-slate-200 text-sm font-semibold rounded-lg transition">
+                                Esborrar patró
+                            </button>
+                            <button id="copySandboxBtn" class="flex-1 py-2 px-4 bg-emerald-600 hover:bg-emerald-500 text-slate-950 text-sm font-extrabold rounded-lg transition shadow-lg shadow-emerald-500/20">
+                                Copiar Codi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ======================================================================
+             COLUMNA DRETA: GALERIES VISUALS I TAULES
+             ====================================================================== -->
+        <section class="lg:col-span-5 flex flex-col gap-6">
+
+            <!-- ==================================================================
+                 NOU APARTAT POLÍT: Traços Nets 
+                 Dissenyat per igualar exactament la imatge de referència
+                 ================================================================== -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-2 h-full bg-emerald-500"></div>
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-semibold font-display text-white">
+                        Traços Nets en COMAND
+                    </h2>
+                </div>
+                
+                <!-- 
+                   CONTENIDOR PRINCIPAL BLANC
+                   Això crea el recquadre blanc general igual que a la foto,
+                   sense ombres internes a les lletres, pur fons blanc. 
+                -->
+                <div id="cleanDrawingsGallery" class="bg-white rounded-[16px] p-6 flex flex-wrap gap-x-1 gap-y-2 min-h-[140px] items-center content-center shadow-lg">
+                    <!-- S'omplirà mitjançant el JS amb la versió pulcra -->
+                </div>
+            </div>
+
+            <!-- Panell de Control de Dibuixos -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-2 h-full bg-yellow-500"></div>
+                
+                <h2 class="text-lg font-semibold font-display mb-4 text-white flex items-center gap-2">
+                    <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path>
+                    </svg>
+                    Configura la teva galeria de dibuixos
+                </h2>
+
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">Com vols generar els dibuixos auxiliars?</label>
+                <div class="grid grid-cols-1 gap-2">
+                    <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-800 bg-slate-950/40 hover:border-slate-700 transition cursor-pointer">
+                        <input type="radio" name="drawMode" value="lletra" checked class="text-amber-500 focus:ring-amber-500 h-4 w-4 bg-slate-900 border-slate-700">
+                        <div>
+                            <span class="text-sm font-bold block text-white">Lletra a lletra (COMAND 0.1)</span>
+                            <span class="text-xs text-slate-400">Genera un dibuix individual per a cada lletra / símbol.</span>
+                        </div>
+                    </label>
+                    <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-800 bg-slate-950/40 hover:border-slate-700 transition cursor-pointer">
+                        <input type="radio" name="drawMode" value="paraula" class="text-amber-500 focus:ring-amber-500 h-4 w-4 bg-slate-900 border-slate-700">
+                        <div>
+                            <span class="text-sm font-bold block text-white">Paraula a paraula (COMAND 0.2)</span>
+                            <span class="text-xs text-slate-400">Suma els codis de cada paraula i en fa un dibuix.</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Galeria de Dibuixos Generats (Amb dades, codis i guies numèriques) -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-2 h-full bg-red-500"></div>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold font-display text-white">
+                        Galeria de Dibuixos en COMAND
+                    </h2>
+                    <span id="drawingsCounter" class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-full font-bold font-mono">0 dibuixos</span>
+                </div>
+                
+                <div id="drawingsGallery" class="flex flex-col gap-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                    <!-- Es carregarà dinàmicament en funció del text d'entrada -->
+                </div>
+            </div>
+
+            <!-- Taula de Consulta (Cheat Sheet de lletres i símbols amb CERCADOR) -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                <div class="flex flex-col gap-3 mb-4">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-base font-bold font-display text-white">Taula del COMAND 0.1</h2>
+                        <span class="text-[10px] bg-slate-800 px-2.5 py-0.5 rounded-full text-slate-300 font-semibold uppercase">Alfabet</span>
+                    </div>
+                    
+                    <!-- Cercador del Cheat Sheet -->
+                    <div class="relative">
+                        <input 
+                            id="searchCheatSheet"
+                            type="text" 
+                            placeholder="Cerca caràcter o codi... (Ex: A, B, !)" 
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 pl-9 pr-4 text-sm text-slate-300 placeholder-slate-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all"
+                        />
+                        <svg class="w-4 h-4 text-slate-600 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs font-mono max-h-48 overflow-y-auto pr-2 custom-scrollbar" id="cheatSheetContainer">
+                    <!-- S'omple amb JS -->
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-900 bg-slate-950 py-6 mt-12">
+        <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-500">
+            <p>© 2026 Idioma COMAND. Creat per <strong class="text-slate-300">Hablack09</strong>.</p>
+            <div class="flex gap-4">
+                <span class="hover:text-amber-500 cursor-pointer transition-colors">Comand 0.1</span>
+                <span class="hover:text-amber-500 cursor-pointer transition-colors">Comand 0.2</span>
+                <span class="hover:text-amber-500 cursor-pointer transition-colors">Comand 0.3</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ==========================================================================
+         SCRIPT DEL MOTOR DE TRADUCCIÓ I RENDERITZAT
+         ========================================================================== -->
+    <script>
+        /**
+         * ============================================================================
+         * DEFINICIÓ DE DICCIONARIS: LLETRES
+         * Desglossat manualment per facilitar futures modificacions i claredat.
+         * ============================================================================
+         */
+        const COMAND_LETTERS = {};
+        COMAND_LETTERS['A'] = '1478963654';
+        COMAND_LETTERS['B'] = '147854521';
+        COMAND_LETTERS['C'] = '87412';
+        COMAND_LETTERS['D'] = '1478621';
+        COMAND_LETTERS['E'] = '2145478';
+        COMAND_LETTERS['F'] = '1478745';
+        COMAND_LETTERS['G'] = '987412365';
+        COMAND_LETTERS['H'] = '147456963';
+        COMAND_LETTERS['I'] = '258';
+        COMAND_LETTERS['J'] = '9632';
+        COMAND_LETTERS['K'] = '1474842';
+        COMAND_LETTERS['L'] = '7412';
+        COMAND_LETTERS['M'] = '1475963';
+        COMAND_LETTERS['N'] = '1475369';
+        COMAND_LETTERS['O'] = '147896321';
+        COMAND_LETTERS['P'] = '147854';
+        COMAND_LETTERS['Q'] = '547853';
+        COMAND_LETTERS['R'] = '1478542';
+        COMAND_LETTERS['S'] = '874521';
+        COMAND_LETTERS['T'] = '258789';
+        COMAND_LETTERS['U'] = '7412369';
+        COMAND_LETTERS['V'] = '74269';
+        COMAND_LETTERS['W'] = '7415369';
+        COMAND_LETTERS['X'] = '159357';
+        COMAND_LETTERS['Y'] = '25759';
+        COMAND_LETTERS['Z'] = '7895123';
+        COMAND_LETTERS['Ç'] = '87452';
+
+        /**
+         * ============================================================================
+         * DEFINICIÓ DE DICCIONARIS: SÍMBOLS
+         * Símbols oficials extrets de les diapositives finals del vídeo de presentació.
+         * ============================================================================
+         */
+        const COMAND_SYMBOLS = {};
+        COMAND_SYMBOLS['!'] = '852';
+        COMAND_SYMBOLS['?'] = '89652';
+        COMAND_SYMBOLS['.'] = '2';
+        COMAND_SYMBOLS[','] = '51';
+        COMAND_SYMBOLS['_'] = '123';
+        COMAND_SYMBOLS['='] = '456';
+        COMAND_SYMBOLS[')'] = '862';
+        COMAND_SYMBOLS['('] = '842';
+        COMAND_SYMBOLS['['] = '89632';
+        COMAND_SYMBOLS[']'] = '87412';
+        COMAND_SYMBOLS['{'] = '85452';
+        COMAND_SYMBOLS['}'] = '85652';
+        COMAND_SYMBOLS[';'] = '1587';
+        COMAND_SYMBOLS[':'] = '12587';
+        COMAND_SYMBOLS['*'] = '15358';
+        COMAND_SYMBOLS['/'] = '159';
+        COMAND_SYMBOLS['"'] = '4785';
+        COMAND_SYMBOLS['^'] = '486';
+        COMAND_SYMBOLS['\''] = '85';
+        COMAND_SYMBOLS['-'] = '4563';
+
+        /**
+         * ============================================================================
+         * COORDENADES DE LA QUADRÍCULA
+         * Assignació dels punts de referència en un canvas o espai visual de 240x240.
+         * Això permet traçar les línies de forma consistent en tots els gràfics.
+         * ============================================================================
+         */
+        const GRID_COORDS = {};
+        
+        // Fila Inferior
+        GRID_COORDS['1'] = { x: 45, y: 195 };
+        GRID_COORDS['2'] = { x: 120, y: 195 };
+        GRID_COORDS['3'] = { x: 195, y: 195 };
+        
+        // Fila Mitja
+        GRID_COORDS['4'] = { x: 45, y: 120 };
+        GRID_COORDS['5'] = { x: 120, y: 120 };
+        GRID_COORDS['6'] = { x: 195, y: 120 };
+        
+        // Fila Superior
+        GRID_COORDS['7'] = { x: 45, y: 45 };
+        GRID_COORDS['8'] = { x: 120, y: 45 };
+        GRID_COORDS['9'] = { x: 195, y: 45 };
+
+        /**
+         * ============================================================================
+         * FUNCIONS BÀSIQUES DE PROCESSAMENT
+         * ============================================================================
+         */
+
+        /**
+         * Normalització estricta del text per al COMAND.
+         * @param {string} text - El text introduït per l'usuari.
+         * @returns {string} - El text net, en majúscules, sense accents innecessaris.
+         */
+        function normalizeText(text) {
+            let result = text.toUpperCase();
+            result = result.normalize("NFD");
+            // Elimina accents excepte en caràcters permesos si cal
+            result = result.replace(/[\u0300-\u036f]/g, ""); 
+            // Conserva només lletres, Ç, espais i símbols presents al diccionari
+            result = result.replace(/[^A-ZÇ\s!?.,_=\(\)\[\]\{\};:*\/\^"'\-]/g, "");
+            return result;
+        }
+
+        /**
+         * Retorna el codi COMAND de qualsevol lletra o símbol.
+         * @param {string} char - Caràcter individual.
+         * @returns {string} - Cadena numèrica associada o string buida si no existeix.
+         */
+        function getCharacterCode(char) {
+            if (COMAND_LETTERS[char] !== undefined) {
+                return COMAND_LETTERS[char];
+            } else if (COMAND_SYMBOLS[char] !== undefined) {
+                return COMAND_SYMBOLS[char];
+            }
+            return '';
+        }
+
+        /**
+         * Construeix la Cheat Sheet (Taula d'ajuda visual) del COMAND 0.1
+         * @param {string} filterQuery - Cadena per filtrar els resultats.
+         */
+        function buildCheatSheet(filterQuery = '') {
+            const container = document.getElementById('cheatSheetContainer');
+            container.innerHTML = '';
+            
+            // Combinem abecedari i símbols en un sol objecte per iterar
+            const allElements = {};
+            Object.assign(allElements, COMAND_LETTERS);
+            Object.assign(allElements, COMAND_SYMBOLS);
+
+            const query = filterQuery.toUpperCase().trim();
+            const keys = Object.keys(allElements);
+
+            for (let i = 0; i < keys.length; i++) {
+                let letter = keys[i];
+                let code = allElements[letter];
+
+                // Comprova si hi ha coincidència en lletra o codi
+                if (query === '' || letter.includes(query) || code.includes(query)) {
+                    const el = document.createElement('div');
+                    el.className = 'flex items-center justify-between p-2 rounded bg-slate-950/40 border border-slate-800/60 hover:border-slate-700/60 transition';
+                    
+                    let letterSpan = `<span class="text-white font-bold bg-slate-800/80 px-1.5 py-0.5 rounded text-xs">${letter}</span>`;
+                    let codeSpan = `<span class="text-amber-500 font-semibold text-[10px] font-mono">${code}</span>`;
+                    
+                    el.innerHTML = letterSpan + codeSpan;
+                    container.appendChild(el);
+                }
+            }
+
+            if (container.children.length === 0) {
+                container.innerHTML = `<p class="col-span-full text-slate-500 text-center py-2">Cap caràcter trobat</p>`;
+            }
+        }
+
+        /**
+         * ============================================================================
+         * NUCLI DE TRADUCCIÓ I GENERACIÓ
+         * Aquesta funció fa d'enllaç entre el text i les representacions gràfiques.
+         * ============================================================================
+         */
+        function translate() {
+            const rawInput = document.getElementById('textInput').value;
+            const normalized = normalizeText(rawInput);
+            
+            // Separem per paraules, preservant la lògica de generació del Comand
+            const words = normalized.trim().split(/\s+/).filter(w => w.length > 0);
+            
+            // Validació de camp buit
+            if (words.length === 0) {
+                document.getElementById('outputC01').innerText = "Escriu alguna cosa per traduir...";
+                
+                // Neteja de la galeria de referència
+                document.getElementById('drawingsGallery').innerHTML = `<p class="text-slate-500 text-sm text-center py-6">Escriu contingut per generar els dibuixos.</p>`;
+                
+                // Neteja de la galeria de traços nets
+                document.getElementById('cleanDrawingsGallery').innerHTML = `<p class="text-slate-400 text-xs text-center w-full mt-4">Pendent de rebre text...</p>`;
+                
+                document.getElementById('drawingsCounter').innerText = "0 dibuixos";
+                return;
+            }
+
+            // --- TRADUCCIÓ TEXTUAL COMAND 0.1 ---
+            let comand01Words = [];
+            for (let i = 0; i < words.length; i++) {
+                let currentWordChars = words[i].split('');
+                let translatedChars = [];
+                for (let j = 0; j < currentWordChars.length; j++) {
+                    let code = getCharacterCode(currentWordChars[j]);
+                    if (code !== '') {
+                        translatedChars.push(code);
+                    }
+                }
+                // Les lletres s'uneixen amb una barra /
+                comand01Words.push(translatedChars.join('/'));
+            }
+            // Les paraules s'uneixen amb un guió -
+            const comand01Result = comand01Words.join('-');
+            document.getElementById('outputC01').innerText = comand01Result;
+
+            // Llança la renderització dels dibuixos i la versió de traços nets
+            renderDrawings(normalized, words);
+        }
+
+        /**
+         * Genera les galeries de dibuixos basades en la configuració seleccionada
+         * @param {string} normalizedText - Text sencer normalitzat.
+         * @param {Array} words - Array de paraules obtingudes del text.
+         */
+        function renderDrawings(normalizedText, words) {
+            const container = document.getElementById('drawingsGallery');
+            const cleanContainer = document.getElementById('cleanDrawingsGallery');
+            
+            container.innerHTML = '';
+            cleanContainer.innerHTML = '';
+
+            // Selector del mode de dibuix escollit per l'usuari (Lletra o Paraula)
+            let drawModeRadio = document.querySelector('input[name="drawMode"]:checked');
+            let drawMode = drawModeRadio ? drawModeRadio.value : 'lletra';
+            
+            let drawingsToRender = []; 
+
+            // Construïm els elements per a la Galeria Clàssica (Guies vermelles i taulers)
+            const cleanChars = normalizedText.replace(/\s+/g, '').split('').filter(char => getCharacterCode(char) !== '');
+
+            if (drawMode === 'lletra') {
+                for (let i = 0; i < cleanChars.length; i++) {
+                    let char = cleanChars[i];
+                    let code = getCharacterCode(char);
+                    drawingsToRender.push({
+                        label: char,
+                        subtitle: `Dibuix ${i + 1}`,
+                        code: code
+                    });
+                }
+            } else if (drawMode === 'paraula') {
+                for (let i = 0; i < words.length; i++) {
+                    let word = words[i];
+                    let wordSum = 0n; // Utilitzem BigInt per si els números es desborden
+                    let explanation = [];
+                    
+                    let chars = word.split('');
+                    for (let j = 0; j < chars.length; j++) {
+                        let code = getCharacterCode(chars[j]);
+                        if (code) {
+                            wordSum += BigInt(code);
+                            explanation.push(code);
+                        }
+                    }
+
+                    // En Comand 0.2, traiem els 0 generats a la suma
+                    let sumStr = wordSum.toString().replace(/0/g, ''); 
+                    drawingsToRender.push({
+                        label: word,
+                        subtitle: `${explanation.join(' + ')} = ${wordSum.toLocaleString()}`,
+                        code: sumStr
+                    });
+                }
+            }
+
+            // Actualitzem el comptador de la interfície d'usuari
+            document.getElementById('drawingsCounter').innerText = `${drawingsToRender.length} dibuixos`;
+
+            // --- 1. RENDERITZAT DE LA GALERIA CLÀSSICA ---
+            for (let idx = 0; idx < drawingsToRender.length; idx++) {
+                let drawing = drawingsToRender[idx];
+                
+                const card = document.createElement('div');
+                card.className = "bg-slate-950 p-4 border border-slate-800 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:border-slate-700 transition";
+                
+                const details = document.createElement('div');
+                details.className = "flex-grow min-w-0";
+                
+                let titleHtml = `<h3 class="text-sm font-bold text-white uppercase tracking-wider truncate">Caràcter/Paraula: <span class="text-amber-500">${drawing.label}</span></h3>`;
+                let subHtml = `<p class="text-[10px] text-slate-500 font-mono mt-0.5 truncate">${drawing.subtitle}</p>`;
+                let codeHtml = `<p class="text-xs text-amber-500/80 font-mono font-bold mt-2 break-all">Traç: ${drawing.code || 'Sense traç'}</p>`;
+                
+                details.innerHTML = titleHtml + subHtml + codeHtml;
+
+                const codePath = drawing.code;
+                
+                // Codi SVG Base amb les guies posteriors (canvas)
+                let guidedSvgHtml = `
+                    <svg viewBox="0 0 240 240" class="w-full h-full">
+                        <line x1="82.5" y1="15" x2="82.5" y2="225" stroke="rgba(255,255,255,0.03)" stroke-dasharray="3,3" />
+                        <line x1="157.5" y1="15" x2="157.5" y2="225" stroke="rgba(255,255,255,0.03)" stroke-dasharray="3,3" />
+                        <line x1="15" y1="82.5" x2="225" y2="82.5" stroke="rgba(255,255,255,0.03)" stroke-dasharray="3,3" />
+                        <line x1="15" y1="157.5" x2="225" y2="157.5" stroke="rgba(255,255,255,0.03)" stroke-dasharray="3,3" />
+                `;
+
+                // Renderitzem els cercles i números de la quadrícula
+                const gridKeys = Object.keys(GRID_COORDS);
+                for (let k = 0; k < gridKeys.length; k++) {
+                    let num = gridKeys[k];
+                    let pos = GRID_COORDS[num];
+                    guidedSvgHtml += `
+                        <circle cx="${pos.x}" cy="${pos.y}" r="12" fill="#131e3b" stroke="rgba(255,255,255,0.04)" />
+                        <text x="${pos.x}" y="${pos.y + 3}" font-family="monospace" font-size="10" font-weight="bold" fill="rgba(255,255,255,0.3)" text-anchor="middle">${num}</text>
+                    `;
+                }
+
+                // Generem el camí real (Path) si hi ha més d'un nombre
+                if (codePath && codePath.length > 1) {
+                    let pathD = '';
+                    let points = [];
+                    for (let i = 0; i < codePath.length; i++) {
+                        let digit = codePath[i];
+                        let pos = GRID_COORDS[digit];
+                        if (pos) {
+                            points.push(pos);
+                            if (i === 0) {
+                                pathD += `M ${pos.x} ${pos.y}`;
+                            } else {
+                                pathD += ` L ${pos.x} ${pos.y}`;
+                            }
+                        }
+                    }
+
+                    if (points.length > 0) {
+                        // Traç vermell brillant característic del COMAND clàssic
+                        guidedSvgHtml += `
+                            <path d="${pathD}" fill="none" stroke="#ef4444" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" class="glow-red" />
+                            <circle cx="${points[0].x}" cy="${points[0].y}" r="6" fill="#facc15" stroke="#fff" stroke-width="1.5" />
+                        `;
+                    }
+                }
+
+                guidedSvgHtml += `</svg>`;
+
+                const svgContainer = document.createElement('div');
+                svgContainer.className = "w-16 h-16 bg-slate-900 rounded-lg border border-slate-850 p-1 flex-shrink-0 overflow-hidden";
+                svgContainer.innerHTML = guidedSvgHtml;
+
+                card.appendChild(details);
+                card.appendChild(svgContainer);
+                container.appendChild(card);
+            }
+
+            // --- 2. RENDERITZAT NOU DELS "TRAÇOS NETS" ---
+            // S'ha reconstruït per complir estrictament: Fons purament blanc, traços negres sense ombres.
+            
+            if (drawMode === 'lletra') {
+                // Si estem per lletres, iterem les paraules de l'usuari i mantenim els espais visuals
+                for (let w = 0; w < words.length; w++) {
+                    let currentWord = words[w];
+                    let chars = currentWord.split('');
+                    
+                    for (let c = 0; c < chars.length; c++) {
+                        let codePath = getCharacterCode(chars[c]);
+                        if (codePath && codePath.length > 1) {
+                            
+                            // Contenidor individual de la lletra (Sense vora, sense fons diferent, pur flex block)
+                            let cleanDiv = document.createElement('div');
+                            cleanDiv.className = "w-12 h-12 flex items-center justify-center shrink-0";
+                            
+                            let cleanSvgHtml = `<svg viewBox="0 0 240 240" class="w-full h-full">`;
+                            let pathD = '';
+                            
+                            for (let i = 0; i < codePath.length; i++) {
+                                let pos = GRID_COORDS[codePath[i]];
+                                if (pos) {
+                                    if (i === 0) pathD += `M ${pos.x} ${pos.y}`;
+                                    else pathD += ` L ${pos.x} ${pos.y}`;
+                                }
+                            }
+                            
+                            // Trazat negre sòlid pur (sense classes afegides per a ombres o lluminositats)
+                            cleanSvgHtml += `<path d="${pathD}" fill="none" stroke="#000000" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" />`;
+                            cleanSvgHtml += `</svg>`;
+                            
+                            cleanDiv.innerHTML = cleanSvgHtml;
+                            cleanContainer.appendChild(cleanDiv);
+                        }
+                    }
+
+                    // Afegeix un bloc d'espai visual entre paraules, excepte si és l'última paraula
+                    if (w < words.length - 1) {
+                        let spaceDiv = document.createElement('div');
+                        // L'amplada de l'espai la defino similar a la d'un caràcter mig
+                        spaceDiv.className = "w-8 h-12 shrink-0";
+                        cleanContainer.appendChild(spaceDiv);
+                    }
+                }
+
+            } else if (drawMode === 'paraula') {
+                // Si el mode és per paraula, tractem la paraula sencera com una única entitat de dibuix
+                for (let d = 0; d < drawingsToRender.length; d++) {
+                    let codePath = drawingsToRender[d].code;
+                    
+                    if (codePath && codePath.length > 1) {
+                        let cleanDiv = document.createElement('div');
+                        cleanDiv.className = "w-12 h-12 flex items-center justify-center shrink-0";
+                        
+                        let cleanSvgHtml = `<svg viewBox="0 0 240 240" class="w-full h-full">`;
+                        let pathD = '';
+                        
+                        for (let i = 0; i < codePath.length; i++) {
+                            let pos = GRID_COORDS[codePath[i]];
+                            if (pos) {
+                                if (i === 0) pathD += `M ${pos.x} ${pos.y}`;
+                                else pathD += ` L ${pos.x} ${pos.y}`;
+                            }
+                        }
+                        
+                        cleanSvgHtml += `<path d="${pathD}" fill="none" stroke="#000000" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" />`;
+                        cleanSvgHtml += `</svg>`;
+                        
+                        cleanDiv.innerHTML = cleanSvgHtml;
+                        cleanContainer.appendChild(cleanDiv);
+                        
+                        // Si hi ha múltiples paraules convertides, posem un espai visual
+                        if (d < drawingsToRender.length - 1) {
+                            let spaceDiv = document.createElement('div');
+                            spaceDiv.className = "w-8 h-12 shrink-0";
+                            cleanContainer.appendChild(spaceDiv);
+                        }
+                    }
+                }
+            }
+
+            // Missatge de fallback per quan no hi ha traços possibles
+            if (cleanContainer.children.length === 0) {
+                cleanContainer.innerHTML = `<p class="text-slate-400 text-xs w-full text-center mt-4">Sense traços nets generats. Introduïu paraules vàlides.</p>`;
+            }
+        }
+
+        /**
+         * ============================================================================
+         * INTERACCIÓ AMB LA INTERFÍCIE (ESDEVENIMENTS)
+         * ============================================================================
+         */
+
+        // Escoltar canvis de l'input principal
+        document.getElementById('textInput').addEventListener('input', translate);
+        
+        // Netejar camp i regenerar
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            document.getElementById('textInput').value = '';
+            translate();
+        });
+
+        // Copiar contingut textual
+        document.getElementById('copyC01').addEventListener('click', () => {
+            const textToCopy = document.getElementById('outputC01').innerText;
+            if (textToCopy.startsWith("Escriu alguna cosa")) return;
+
+            const tempTextArea = document.createElement("textarea");
+            tempTextArea.value = textToCopy;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempTextArea);
+
+            const btn = document.getElementById('copyC01');
+            btn.innerText = "Copiat!";
+            setTimeout(() => {
+                btn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg> Copiar Codi`;
+            }, 1500);
+        });
+
+        // Regenerar si es canvia el mode (Lletra a Lletra vs Paraula a Paraula)
+        const radios = document.querySelectorAll('input[name="drawMode"]');
+        for (let r = 0; r < radios.length; r++) {
+            radios[r].addEventListener('change', translate);
+        }
+
+        // Cerca interactiva pel diccionari visual inferior
+        document.getElementById('searchCheatSheet').addEventListener('input', (e) => {
+            buildCheatSheet(e.target.value);
+        });
+
+        /**
+         * ============================================================================
+         * GESTIÓ DEL SORRAL INTERACTIU (SANDBOX CANVAS)
+         * Funcionalitat per dibuixar directament els codis a mà alçada amb el ratolí.
+         * ============================================================================
+         */
+        const sandboxCanvas = document.getElementById('sandboxCanvas');
+        const ctx = sandboxCanvas.getContext('2d');
+        const sandboxInput = document.getElementById('sandboxInput');
+        
+        let drawingPath = [];
+        let isDrawing = false;
+        let lastNode = null;
+
+        function drawSandbox() {
+            ctx.clearRect(0, 0, sandboxCanvas.width, sandboxCanvas.height);
+            
+            // Pintem el fons fosc
+            ctx.fillStyle = '#020617';
+            ctx.fillRect(0, 0, sandboxCanvas.width, sandboxCanvas.height);
+
+            // Dibuixem el traç actual generat en verd (cas Sandbox)
+            if (drawingPath.length > 1) {
+                ctx.beginPath();
+                const startPos = GRID_COORDS[drawingPath[0]];
+                if (startPos) ctx.moveTo(startPos.x, startPos.y);
+                
+                for (let i = 1; i < drawingPath.length; i++) {
+                    const pos = GRID_COORDS[drawingPath[i]];
+                    if (pos) ctx.lineTo(pos.x, pos.y);
+                }
+                
+                ctx.strokeStyle = '#34d399'; 
+                ctx.lineWidth = 5;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.stroke();
+
+                // Llum posterior o brillantor del pinzell del canvas
+                ctx.strokeStyle = 'rgba(52, 211, 153, 0.2)';
+                ctx.lineWidth = 15;
+                ctx.stroke();
+            }
+
+            // Pintem els botons numèrics ("nodes") sobre la graella
+            const gridKeysSandbox = Object.keys(GRID_COORDS);
+            for (let i = 0; i < gridKeysSandbox.length; i++) {
+                let num = gridKeysSandbox[i];
+                let pos = GRID_COORDS[num];
+                
+                const isActive = drawingPath.includes(num);
+                const isFirst = drawingPath[0] === num;
+
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, 18, 0, Math.PI * 2);
+                
+                if (isActive) {
+                    if (isFirst) {
+                        ctx.fillStyle = '#f59e0b'; // color ambre pel primer punt
+                    } else {
+                        ctx.fillStyle = '#047857'; // color verd per la resta
+                    }
+                    ctx.strokeStyle = '#10b981';
+                } else {
+                    ctx.fillStyle = '#1e293b'; // fons inactiu
+                    ctx.strokeStyle = '#334155'; // vora inactiva
+                }
+                
+                ctx.lineWidth = 2;
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = isActive ? '#ffffff' : '#94a3b8';
+                ctx.font = 'bold 14px monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(num, pos.x, pos.y);
+            }
+        }
+
+        // Funció d'ajuda per calcular a quin node de la graella és a prop el ratolí/dit
+        function getClosestNode(clientX, clientY) {
+            const rect = sandboxCanvas.getBoundingClientRect();
+            const x = ((clientX - rect.left) / rect.width) * sandboxCanvas.width;
+            const y = ((clientY - rect.top) / rect.height) * sandboxCanvas.height;
+
+            let closestNum = null;
+            let minDistance = 25; 
+
+            const gridKeysNode = Object.keys(GRID_COORDS);
+            for (let i = 0; i < gridKeysNode.length; i++) {
+                let num = gridKeysNode[i];
+                let pos = GRID_COORDS[num];
+                
+                // Distància Euclidiana
+                const dist = Math.sqrt(Math.pow(x - pos.x, 2) + Math.pow(y - pos.y, 2));
+                if (dist < minDistance) {
+                    minDistance = dist;
+                    closestNum = num;
+                }
+            }
+
+            return closestNum;
+        }
+
+        // Inici del toc o clic al Sorral
+        function handleStart(e) {
+            e.preventDefault();
+            isDrawing = true;
+            
+            let clientX, clientY;
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            
+            const node = getClosestNode(clientX, clientY);
+            if (node) {
+                drawingPath = [node];
+                lastNode = node;
+                updateSandboxOutput();
+                drawSandbox();
+            }
+        }
+
+        // Moviment de l'arrastreament
+        function handleMove(e) {
+            if (!isDrawing) return;
+            
+            let clientX, clientY;
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+
+            const node = getClosestNode(clientX, clientY);
+            if (node && node !== lastNode) {
+                drawingPath.push(node);
+                lastNode = node;
+                updateSandboxOutput();
+                drawSandbox();
+            }
+        }
+
+        function handleEnd() {
+            isDrawing = false;
+        }
+
+        // Refrescar el camp d'entrada text al dibuixar al Sorral
+        function updateSandboxOutput() {
+            sandboxInput.value = drawingPath.join('');
+        }
+
+        // Escolta els canvis quan l'usuari decideix escriure directament en comptes de dibuixar
+        sandboxInput.addEventListener('input', (e) => {
+            let sanitizedValue = e.target.value.replace(/[^1-9]/g, '');
+            e.target.value = sanitizedValue;
+
+            drawingPath = sanitizedValue.split('');
+            lastNode = drawingPath.length > 0 ? drawingPath[drawingPath.length - 1] : null;
+            drawSandbox();
+        });
+
+        // Afegint Listeners interactius per Mouse i Tàctil
+        sandboxCanvas.addEventListener('mousedown', handleStart);
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('mouseup', handleEnd);
+
+        sandboxCanvas.addEventListener('touchstart', handleStart, { passive: false });
+        window.addEventListener('touchmove', handleMove, { passive: false });
+        window.addEventListener('touchend', handleEnd);
+
+        // Boto de Netejar el Sandbox
+        document.getElementById('clearSandboxBtn').addEventListener('click', () => {
+            drawingPath = [];
+            lastNode = null;
+            sandboxInput.value = '';
+            drawSandbox();
+        });
+
+        // Boto de Copiar la cadena generada al Sandbox
+        document.getElementById('copySandboxBtn').addEventListener('click', () => {
+            const textToCopy = sandboxInput.value;
+            if (textToCopy.length === 0) return;
+            
+            const tempTextArea = document.createElement("textarea");
+            tempTextArea.value = textToCopy;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempTextArea);
+
+            const btn = document.getElementById('copySandboxBtn');
+            btn.innerText = "Copiat!";
+            setTimeout(() => {
+                btn.innerText = "Copiar Codi";
+            }, 1500);
+        });
+
+        /**
+         * ============================================================================
+         * LLIBRERIA D'UTILITATS I MATEMÀTIQUES COMAND (FUTURES EXPANSIONS)
+         * Aquest segment és altament documentat per estendre la flexibilitat 
+         * del motor quan avanci cap al llançament oficial complet de la versió 0.3.
+         * S'inclou la lògica de color, estructures vectorials i càlcul geomètric.
+         * ============================================================================
+         */
+        
+        const ComandEngineMath = {
+            
+            /**
+             * Calcula la distància entre dos punts a l'espai bidimensional.
+             * Util per detectar col·lisions de vectors futurs al canvas.
+             */
+            calcularDistanciaDosPunts: function(x1, y1, x2, y2) {
+                let dx = x2 - x1;
+                let dy = y2 - y1;
+                return Math.sqrt(dx * dx + dy * dy);
+            },
+
+            /**
+             * Calcula l'angle (en radians) entre dos punts, molt útil per generar fletxes
+             * o vectors direccionals als vèrtexs dels dibuixos COMAND.
+             */
+            calcularAngleRadiants: function(x1, y1, x2, y2) {
+                return Math.atan2(y2 - y1, x2 - x1);
+            },
+
+            /**
+             * Transforma un angle de radians a graus per representació o rotacions CSS.
+             */
+            radiantsAGraus: function(rads) {
+                return rads * (180 / Math.PI);
+            },
+
+            /**
+             * Funció de LERP (Linear Interpolation) per animacions suaus
+             * en transicions de camins quan canvia d'un número a un altre.
+             */
+            interpolarLinia: function(inici, final, factor) {
+                return inici + (final - inici) * factor;
+            },
+
+            /**
+             * Càlcul de corbes quadràtiques de Bézier (Utilitat pel COMAND orgànic - En progrés)
+             */
+            calcularCorbaBezierQuad: function(t, p0, p1, p2) {
+                // p0 és el punt inicial, p1 el de control, p2 el final
+                let u = 1 - t;
+                let tt = t * t;
+                let uu = u * u;
+
+                let puntResultat = { x: 0, y: 0 };
+                puntResultat.x = uu * p0.x;
+                puntResultat.x += 2 * u * t * p1.x;
+                puntResultat.x += tt * p2.x;
+
+                puntResultat.y = uu * p0.y;
+                puntResultat.y += 2 * u * t * p1.y;
+                puntResultat.y += tt * p2.y;
+
+                return puntResultat;
+            },
+
+            /**
+             * Normalització d'un vector per aconseguir valors unitaris i
+             * calcular normals.
+             */
+            normalitzarVector: function(vx, vy) {
+                let length = Math.sqrt(vx * vx + vy * vy);
+                if (length === 0) return { x: 0, y: 0 };
+                return { x: vx / length, y: vy / length };
+            },
+
+            /**
+             * Rotació de coordenades al voltant d'un eix (x, y) determinat.
+             */
+            rotarPunt: function(cx, cy, x, y, angle) {
+                let radians = (Math.PI / 180) * angle;
+                let cos = Math.cos(radians);
+                let sin = Math.sin(radians);
+                let nx = (cos * (x - cx)) + (sin * (y - cy)) + cx;
+                let ny = (cos * (y - cy)) - (sin * (x - cx)) + cy;
+                return { x: nx, y: ny };
+            },
+
+            /**
+             * Converteix cadenes Hexadecimals a valors RGB per manipulació als filtres.
+             */
+            hexToRgb: function(hex) {
+                let validHex = hex.replace(/^#/, '');
+                if (validHex.length === 3) {
+                    validHex = validHex.split('').map(c => c + c).join('');
+                }
+                let int = parseInt(validHex, 16);
+                let r = (int >> 16) & 255;
+                let g = (int >> 8) & 255;
+                let b = int & 255;
+
+                return { r, g, b };
+            },
+
+            /**
+             * Generació suau d'ombres CSS automàtiques segons color base.
+             */
+            generarDropShadowDinamic: function(colorHex, opacitat) {
+                let rgb = this.hexToRgb(colorHex);
+                if (!rgb) return 'none';
+                return `drop-shadow(0px 4px 6px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacitat}))`;
+            },
+
+            /**
+             * Validació profunda i estricta per assegurar que els vectors no escapen
+             * del requadre establert al SVG o Canvas.
+             */
+            limitarCoordenades: function(valor, min, max) {
+                if (valor < min) return min;
+                if (valor > max) return max;
+                return valor;
+            },
+
+            /**
+             * Funció avançada per suavitzar arrays de coordenades brutes en línies.
+             * Especial per als modes d'escriptura a mà alçada al sandbox.
+             */
+            suavitzarPunts: function(llistaPunts, factorSuavitzacio) {
+                if (llistaPunts.length < 3) return llistaPunts;
+                
+                let puntsSuavitzats = [];
+                puntsSuavitzats.push(llistaPunts[0]);
+                
+                for (let i = 1; i < llistaPunts.length - 1; i++) {
+                    let anterior = llistaPunts[i - 1];
+                    let actual = llistaPunts[i];
+                    let seguent = llistaPunts[i + 1];
+                    
+                    let dx = seguent.x - anterior.x;
+                    let dy = seguent.y - anterior.y;
+                    
+                    let puntControlX = actual.x + (dx * factorSuavitzacio);
+                    let puntControlY = actual.y + (dy * factorSuavitzacio);
+                    
+                    puntsSuavitzats.push({ x: puntControlX, y: puntControlY });
+                }
+                puntsSuavitzats.push(llistaPunts[llistaPunts.length - 1]);
+                
+                return puntsSuavitzats;
+            },
+
+            /**
+             * Sistema d'acceleració/frenada de funcions gràfiques (Easing EasingInOutCubic)
+             */
+            easeInCubic: function (t) {
+                return t * t * t;
+            },
+
+            /**
+             * Easing Out Quadratic per animar escriptura de traç al Canvas.
+             */
+            easeOutQuad: function (t) {
+                return t * (2 - t);
+            },
+            
+            /**
+             * Easing In Out Sine, ideal per parpadeig d'elements seleccionats.
+             */
+            easeInOutSine: function (t) {
+                return -(Math.cos(Math.PI * t) - 1) / 2;
+            },
+
+            /**
+             * Generador pseudo-aleatori de llavors, utilitzat teòricament per
+             * aplicar lleugeres imperfeccions humanitzades a l'idioma original.
+             */
+            generadorAleatoriLlavors: function(seed) {
+                var m = 25;
+                var a = 11;
+                var c = 17;
+                var z = seed;
+
+                return function() {
+                    z = (a * z + c) % m;
+                    return z / m;
+                };
+            },
+
+            /**
+             * Obté el centre geomètric exacte a partir d'un array de punts.
+             */
+            trobarCentreGravetat: function(puntsArray) {
+                if (!puntsArray || puntsArray.length === 0) return { x: 0, y: 0 };
+                let sumaX = 0;
+                let sumaY = 0;
+                let total = puntsArray.length;
+                
+                for(let i=0; i<total; i++) {
+                    sumaX += puntsArray[i].x;
+                    sumaY += puntsArray[i].y;
+                }
+                
+                return {
+                    x: sumaX / total,
+                    y: sumaY / total
+                };
+            },
+
+            /**
+             * Genera una paleta de colors monocromàtics basats en un color original.
+             * Aquest sistema pot ser clau per fer temes de color en properes actualitzacions.
+             */
+            generarVariacionsColor: function(hexBase, quantitat) {
+                let variacions = [];
+                let rgbBase = this.hexToRgb(hexBase);
+                if(!rgbBase) return variacions;
+                
+                let pasFactor = 255 / (quantitat + 1);
+                
+                for(let k=1; k<=quantitat; k++) {
+                    let modifyR = Math.min(255, Math.floor(rgbBase.r + (pasFactor * k * 0.1)));
+                    let modifyG = Math.min(255, Math.floor(rgbBase.g + (pasFactor * k * 0.1)));
+                    let modifyB = Math.min(255, Math.floor(rgbBase.b + (pasFactor * k * 0.1)));
+                    variacions.push(`rgb(${modifyR}, ${modifyG}, ${modifyB})`);
+                }
+                return variacions;
+            },
+
+            /**
+             * Càlcul de les dimensions d'una caixa d'envolvent (Bounding Box).
+             * Serveix per empaquetar de forma intel·ligent les lletres dins l'SVG.
+             */
+            calcularCaixaEnvolvent: function(punts) {
+                if(!punts || punts.length === 0) {
+                    return { minX: 0, minY: 0, maxX: 0, maxY: 0, width: 0, height: 0 };
+                }
+                let minX = punts[0].x, minY = punts[0].y;
+                let maxX = punts[0].x, maxY = punts[0].y;
+                
+                for (let i = 1; i < punts.length; i++) {
+                    if (punts[i].x < minX) minX = punts[i].x;
+                    if (punts[i].y < minY) minY = punts[i].y;
+                    if (punts[i].x > maxX) maxX = punts[i].x;
+                    if (punts[i].y > maxY) maxY = punts[i].y;
+                }
+                
+                return {
+                    minX: minX,
+                    minY: minY,
+                    maxX: maxX,
+                    maxY: maxY,
+                    width: maxX - minX,
+                    height: maxY - minY
+                };
+            },
+
+            /**
+             * Valida i neteja entrades numèriques de dades estranyes de teclat per l'sandbox.
+             */
+            netejarDadesSandbox: function(stringInput) {
+                let cleanData = "";
+                for(let i=0; i<stringInput.length; i++){
+                    let charCode = stringInput.charCodeAt(i);
+                    // Comprovar si el caràcter és entre l'1 (49) i el 9 (57)
+                    if(charCode >= 49 && charCode <= 57) {
+                        cleanData += stringInput[i];
+                    }
+                }
+                return cleanData;
+            },
+
+            /**
+             * Genera les matemàtiques necessàries per fer espais negatius i màscares.
+             * Útil si el COMAND requereix talls i lletres fusionades.
+             */
+            crearMascaraRadial: function(radi, amplada, alcada) {
+                return {
+                    cx: amplada / 2,
+                    cy: alcada / 2,
+                    r: radi,
+                    gradient: 'radial-gradient(circle, rgba(0,0,0,1) 0%, rgba(255,255,255,0) 100%)'
+                };
+            },
+
+            /**
+             * Comprovació d'interseccions entre segments (Per optimitzar dibuixos futurs).
+             */
+            detectarInterseccioSegments: function(p1, p2, p3, p4) {
+                let s1_x = p2.x - p1.x;
+                let s1_y = p2.y - p1.y;
+                let s2_x = p4.x - p3.x;
+                let s2_y = p4.y - p3.y;
+
+                let s = (-s1_y * (p1.x - p3.x) + s1_x * (p1.y - p3.y)) / (-s2_x * s1_y + s1_x * s2_y);
+                let t = ( s2_x * (p1.y - p3.y) - s2_y * (p1.x - p3.x)) / (-s2_x * s1_y + s1_x * s2_y);
+
+                if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
+                    return {
+                        x: p1.x + (t * s1_x),
+                        y: p1.y + (t * s1_y)
+                    };
+                }
+                return null;
+            }
+        };
+
+        // Injectem l'eina al context global per ús debug
+        window.ComandEngineMath = ComandEngineMath;
+
+        /**
+         * Inicialització principal i injecció de la interfície quan la pàgina carrega.
+         */
+        window.onload = function() {
+            // Construeix inicialment la taula completa sense filtres
+            buildCheatSheet();
+            
+            // Força la traducció i el render del text per defecte (classe de castella avorrida)
+            translate();
+            
+            // Dibuixa l'estat inicial de la tauleta tàctil
+            drawSandbox();
+        };
+
+    </script>
+</body>
+</html>
