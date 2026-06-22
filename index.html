@@ -151,7 +151,7 @@
                 >Hablack09 ha creat el Command</textarea>
                 
                 <div class="mt-3 flex justify-between items-center">
-                    <p class="text-xs text-slate-400">Suporta lletres, la Ç i també caràcters de puntuació.</p>
+                    <p class="text-xs text-slate-400">Suporta lletres, números propis, la Ç i també caràcters de puntuació.</p>
                     <button 
                         id="clearBtn"
                         class="px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition"
@@ -186,7 +186,7 @@
                 </div>
                 
                 <div class="mt-3 flex justify-between text-xs text-slate-400 font-mono">
-                    <span>Lletra a lletra = <strong class="text-white">/</strong ></span>
+                    <span>Lletra/Codi junt = <strong class="text-white">/</strong ></span>
                     <span>Paraules = <strong class="text-white">-</strong ></span>
                 </div>
             </div>
@@ -280,14 +280,14 @@
                         <input type="radio" name="drawMode" value="lletra" checked class="text-amber-500 focus:ring-amber-500 h-4 w-4 bg-slate-900 border-slate-700">
                         <div>
                             <span class="text-sm font-bold block text-white">Lletra a lletra (COMAND 0.1)</span>
-                            <span class="text-xs text-slate-400">Genera un dibuix individual per a cada lletra / símbol.</span>
+                            <span class="text-xs text-slate-400">Genera un dibuix individual per a cada lletra / codi numèric junt.</span>
                         </div>
                     </label>
                     <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-800 bg-slate-950/40 hover:border-slate-700 transition cursor-pointer">
                         <input type="radio" name="drawMode" value="paraula" class="text-amber-500 focus:ring-amber-500 h-4 w-4 bg-slate-900 border-slate-700">
                         <div>
                             <span class="text-sm font-bold block text-white">Paraula a paraula (COMAND 0.2)</span>
-                            <span class="text-xs text-slate-400">Suma els codis de cada paraula i en fa un dibuix.</span>
+                            <span class="text-xs text-slate-400">Suma els codis de cada paraula (números inclosos) i en fa un dibuix.</span>
                         </div>
                     </label>
                 </div>
@@ -367,7 +367,7 @@
         COMAND_LETTERS['C'] = '87412';
         COMAND_LETTERS['D'] = '1478621';
         COMAND_LETTERS['E'] = '2145478';
-        COMAND_LETTERS['F'] = '145478';
+        COMAND_LETTERS['F'] = '1478745';
         COMAND_LETTERS['G'] = '987412365';
         COMAND_LETTERS['H'] = '147456963';
         COMAND_LETTERS['I'] = '258';
@@ -469,14 +469,15 @@
             result = result.normalize("NFD");
             // Elimina accents excepte en caràcters permesos si cal
             result = result.replace(/[\u0300-\u036f]/g, ""); 
-            // Conserva només lletres, Ç, espais i símbols presents al diccionari
-            result = result.replace(/[^A-ZÇ\s!?.,_=\(\)\[\]\{\};:*\/\^"'\-]/g, "");
+            // Conserva només lletres, NÚMEROS, Ç, espais i símbols presents al diccionari
+            result = result.replace(/[^A-Z0-9Ç\s!?.,_=\(\)\[\]\{\};:*\/\^"'\-]/g, "");
             return result;
         }
 
         /**
          * Retorna el codi COMAND de qualsevol lletra o símbol.
-         * @param {string} char - Caràcter individual.
+         * Ara permet retornar agrupacions de números (ex: 1872) com un únic codi de dibuix.
+         * @param {string} char - Caràcter o seqüència de números introduïts.
          * @returns {string} - Cadena numèrica associada o string buida si no existeix.
          */
         function getCharacterCode(char) {
@@ -484,6 +485,9 @@
                 return COMAND_LETTERS[char];
             } else if (COMAND_SYMBOLS[char] !== undefined) {
                 return COMAND_SYMBOLS[char];
+            } else if (/^\d+$/.test(char)) {
+                // Si l'usuari escriu "1872" junt, es converteix directament en el traç "1872"
+                return char;
             }
             return '';
         }
@@ -556,15 +560,16 @@
             // --- TRADUCCIÓ TEXTUAL COMAND 0.1 ---
             let comand01Words = [];
             for (let i = 0; i < words.length; i++) {
-                let currentWordChars = words[i].split('');
+                // Aquest RegEx és LA CLAU. Agrupa les seqüències de números juntes perquè formin UN SOL caràcter.
+                let currentWordTokens = words[i].match(/[A-ZÇ!?.,_=\(\)\[\]\{\};:*\/\^"'\-]|[\d]+/g) || [];
                 let translatedChars = [];
-                for (let j = 0; j < currentWordChars.length; j++) {
-                    let code = getCharacterCode(currentWordChars[j]);
+                for (let j = 0; j < currentWordTokens.length; j++) {
+                    let code = getCharacterCode(currentWordTokens[j]);
                     if (code !== '') {
                         translatedChars.push(code);
                     }
                 }
-                // Les lletres s'uneixen amb una barra /
+                // Les lletres / blocs de números s'uneixen amb una barra /
                 comand01Words.push(translatedChars.join('/'));
             }
             // Les paraules s'uneixen amb un guió -
@@ -594,17 +599,21 @@
             let drawingsToRender = []; 
 
             // Construïm els elements per a la Galeria Clàssica (Guies vermelles i taulers)
-            const cleanChars = normalizedText.replace(/\s+/g, '').split('').filter(char => getCharacterCode(char) !== '');
-
             if (drawMode === 'lletra') {
-                for (let i = 0; i < cleanChars.length; i++) {
-                    let char = cleanChars[i];
-                    let code = getCharacterCode(char);
-                    drawingsToRender.push({
-                        label: char,
-                        subtitle: `Dibuix ${i + 1}`,
-                        code: code
-                    });
+                for (let w = 0; w < words.length; w++) {
+                    // Extraiem lletres i agrupacions de números
+                    let tokens = words[w].match(/[A-ZÇ!?.,_=\(\)\[\]\{\};:*\/\^"'\-]|[\d]+/g) || [];
+                    for (let i = 0; i < tokens.length; i++) {
+                        let char = tokens[i];
+                        let code = getCharacterCode(char);
+                        if (code !== '') {
+                            drawingsToRender.push({
+                                label: char,
+                                subtitle: `Dibuix ${drawingsToRender.length + 1}`,
+                                code: code
+                            });
+                        }
+                    }
                 }
             } else if (drawMode === 'paraula') {
                 for (let i = 0; i < words.length; i++) {
@@ -612,9 +621,9 @@
                     let wordSum = 0n; // Utilitzem BigInt per si els números es desborden
                     let explanation = [];
                     
-                    let chars = word.split('');
-                    for (let j = 0; j < chars.length; j++) {
-                        let code = getCharacterCode(chars[j]);
+                    let tokens = word.match(/[A-ZÇ!?.,_=\(\)\[\]\{\};:*\/\^"'\-]|[\d]+/g) || [];
+                    for (let j = 0; j < tokens.length; j++) {
+                        let code = getCharacterCode(tokens[j]);
                         if (code) {
                             wordSum += BigInt(code);
                             explanation.push(code);
@@ -644,7 +653,7 @@
                 const details = document.createElement('div');
                 details.className = "flex-grow min-w-0";
                 
-                let titleHtml = `<h3 class="text-sm font-bold text-white uppercase tracking-wider truncate">Caràcter/Paraula: <span class="text-amber-500">${drawing.label}</span></h3>`;
+                let titleHtml = `<h3 class="text-sm font-bold text-white uppercase tracking-wider truncate">Codi Generat: <span class="text-amber-500">${drawing.label}</span></h3>`;
                 let subHtml = `<p class="text-[10px] text-slate-500 font-mono mt-0.5 truncate">${drawing.subtitle}</p>`;
                 let codeHtml = `<p class="text-xs text-amber-500/80 font-mono font-bold mt-2 break-all">Traç: ${drawing.code || 'Sense traç'}</p>`;
                 
@@ -672,8 +681,8 @@
                     `;
                 }
 
-                // Generem el camí real (Path) si hi ha més d'un nombre
-                if (codePath && codePath.length > 1) {
+                // Generem el camí real (Path) si hi ha com a mínim un punt vàlid
+                if (codePath && codePath.length > 0) {
                     let pathD = '';
                     let points = [];
                     for (let i = 0; i < codePath.length; i++) {
@@ -681,12 +690,16 @@
                         let pos = GRID_COORDS[digit];
                         if (pos) {
                             points.push(pos);
-                            if (i === 0) {
+                            if (points.length === 1) {
                                 pathD += `M ${pos.x} ${pos.y}`;
                             } else {
                                 pathD += ` L ${pos.x} ${pos.y}`;
                             }
                         }
+                    }
+
+                    if (points.length === 1) {
+                        pathD = `M ${points[0].x} ${points[0].y} L ${points[0].x} ${points[0].y}`;
                     }
 
                     if (points.length > 0) {
@@ -710,39 +723,50 @@
             }
 
             // --- 2. RENDERITZAT NOU DELS "TRAÇOS NETS" ---
-            // S'ha reconstruït per complir estrictament: Fons purament blanc, traços negres sense ombres.
             
             if (drawMode === 'lletra') {
                 // Si estem per lletres, iterem les paraules de l'usuari i mantenim els espais visuals
                 for (let w = 0; w < words.length; w++) {
                     let currentWord = words[w];
-                    let chars = currentWord.split('');
+                    // Agrupem seqüències de números juntes perquè formin un sol bloc
+                    let tokens = currentWord.match(/[A-ZÇ!?.,_=\(\)\[\]\{\};:*\/\^"'\-]|[\d]+/g) || [];
                     
-                    for (let c = 0; c < chars.length; c++) {
-                        let codePath = getCharacterCode(chars[c]);
-                        if (codePath && codePath.length > 1) {
+                    for (let c = 0; c < tokens.length; c++) {
+                        let codePath = getCharacterCode(tokens[c]);
+                        if (codePath && codePath.length > 0) {
                             
-                            // Contenidor individual de la lletra (Sense vora, sense fons diferent, pur flex block)
-                            let cleanDiv = document.createElement('div');
-                            cleanDiv.className = "w-12 h-12 flex items-center justify-center shrink-0";
-                            
-                            let cleanSvgHtml = `<svg viewBox="0 0 240 240" class="w-full h-full">`;
                             let pathD = '';
+                            let validPoints = 0;
+                            let lastPos = null;
                             
                             for (let i = 0; i < codePath.length; i++) {
                                 let pos = GRID_COORDS[codePath[i]];
                                 if (pos) {
-                                    if (i === 0) pathD += `M ${pos.x} ${pos.y}`;
+                                    validPoints++;
+                                    lastPos = pos;
+                                    if (validPoints === 1) pathD += `M ${pos.x} ${pos.y}`;
                                     else pathD += ` L ${pos.x} ${pos.y}`;
                                 }
                             }
                             
-                            // Trazat negre sòlid pur (sense classes afegides per a ombres o lluminositats)
-                            cleanSvgHtml += `<path d="${pathD}" fill="none" stroke="#000000" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" />`;
-                            cleanSvgHtml += `</svg>`;
-                            
-                            cleanDiv.innerHTML = cleanSvgHtml;
-                            cleanContainer.appendChild(cleanDiv);
+                            if (validPoints > 0) {
+                                // Contenidor individual de la lletra (Sense vora, sense fons diferent, pur flex block)
+                                let cleanDiv = document.createElement('div');
+                                cleanDiv.className = "w-12 h-12 flex items-center justify-center shrink-0";
+                                
+                                let cleanSvgHtml = `<svg viewBox="0 0 240 240" class="w-full h-full">`;
+                                
+                                if (validPoints === 1) {
+                                    pathD = `M ${lastPos.x} ${lastPos.y} L ${lastPos.x} ${lastPos.y}`;
+                                }
+                                
+                                // Trazat negre sòlid pur (sense classes afegides per a ombres o lluminositats)
+                                cleanSvgHtml += `<path d="${pathD}" fill="none" stroke="#000000" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" />`;
+                                cleanSvgHtml += `</svg>`;
+                                
+                                cleanDiv.innerHTML = cleanSvgHtml;
+                                cleanContainer.appendChild(cleanDiv);
+                            }
                         }
                     }
 
@@ -760,32 +784,43 @@
                 for (let d = 0; d < drawingsToRender.length; d++) {
                     let codePath = drawingsToRender[d].code;
                     
-                    if (codePath && codePath.length > 1) {
-                        let cleanDiv = document.createElement('div');
-                        cleanDiv.className = "w-12 h-12 flex items-center justify-center shrink-0";
-                        
-                        let cleanSvgHtml = `<svg viewBox="0 0 240 240" class="w-full h-full">`;
+                    if (codePath && codePath.length > 0) {
                         let pathD = '';
+                        let validPoints = 0;
+                        let lastPos = null;
                         
                         for (let i = 0; i < codePath.length; i++) {
                             let pos = GRID_COORDS[codePath[i]];
                             if (pos) {
-                                if (i === 0) pathD += `M ${pos.x} ${pos.y}`;
+                                validPoints++;
+                                lastPos = pos;
+                                if (validPoints === 1) pathD += `M ${pos.x} ${pos.y}`;
                                 else pathD += ` L ${pos.x} ${pos.y}`;
                             }
                         }
                         
-                        cleanSvgHtml += `<path d="${pathD}" fill="none" stroke="#000000" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" />`;
-                        cleanSvgHtml += `</svg>`;
-                        
-                        cleanDiv.innerHTML = cleanSvgHtml;
-                        cleanContainer.appendChild(cleanDiv);
-                        
-                        // Si hi ha múltiples paraules convertides, posem un espai visual
-                        if (d < drawingsToRender.length - 1) {
-                            let spaceDiv = document.createElement('div');
-                            spaceDiv.className = "w-8 h-12 shrink-0";
-                            cleanContainer.appendChild(spaceDiv);
+                        if (validPoints > 0) {
+                            let cleanDiv = document.createElement('div');
+                            cleanDiv.className = "w-12 h-12 flex items-center justify-center shrink-0";
+                            
+                            let cleanSvgHtml = `<svg viewBox="0 0 240 240" class="w-full h-full">`;
+                            
+                            if (validPoints === 1) {
+                                pathD = `M ${lastPos.x} ${lastPos.y} L ${lastPos.x} ${lastPos.y}`;
+                            }
+                            
+                            cleanSvgHtml += `<path d="${pathD}" fill="none" stroke="#000000" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" />`;
+                            cleanSvgHtml += `</svg>`;
+                            
+                            cleanDiv.innerHTML = cleanSvgHtml;
+                            cleanContainer.appendChild(cleanDiv);
+                            
+                            // Si hi ha múltiples paraules convertides, posem un espai visual
+                            if (d < drawingsToRender.length - 1) {
+                                let spaceDiv = document.createElement('div');
+                                spaceDiv.className = "w-8 h-12 shrink-0";
+                                cleanContainer.appendChild(spaceDiv);
+                            }
                         }
                     }
                 }
@@ -1362,7 +1397,7 @@
             // Construeix inicialment la taula completa sense filtres
             buildCheatSheet();
             
-            // Força la traducció i el render del text per defecte (classe de castella avorrida)
+            // Força la traducció i el render del text per defecte
             translate();
             
             // Dibuixa l'estat inicial de la tauleta tàctil
